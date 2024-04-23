@@ -9,6 +9,10 @@ import math
 
 
 def image_prep(path):
+    if isinstance(path, str):  # If input is a file path
+        img = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
+    else:  # If input is already an image object
+        img = path
     mask_size = 400
     img = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
     edges = canny(img/255.)

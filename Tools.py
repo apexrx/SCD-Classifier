@@ -1,5 +1,6 @@
 
 import matplotlib.pyplot as plt
+import numpy as np
 
 def printArray(message ,array):
     print(message, end= " ")
@@ -21,13 +22,11 @@ def displayAllImages(img, num_features):
         plt.title(i - 1)
         plt.show()
 def displaySickleImage(img, array):
-    result = img
+    result = np.copy(img)
     for z in range(len(array)):
-        if(array[z] == 1):
-            highlightCell(result,z+1)
-    plt.figure("Classified Image")
-    plt.imshow(result)
-
+        if (array[z] == 1):
+            result = highlightCell(result, z + 1)
+    return result
 def convertTo3D(areaArray, perimArray, circularityArray):
     result = []
     for i in range(len(areaArray)):
