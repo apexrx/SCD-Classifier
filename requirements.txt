@@ -1,7 +1,2 @@
-opencv
 numpy
-matplotlib
-skimage
-scipy
-math
-cv2
+opencv-python-headless
