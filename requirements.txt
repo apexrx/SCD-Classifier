@@ -4,3 +4,4 @@ matplotlib
 skimage
 scipy
 math
+cv2
