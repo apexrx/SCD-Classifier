@@ -3,6 +3,5 @@ opencv-python-headless
 matplotlib
 scikit_image
 scikit_learn
-scipy
-math
+scip
 streamlit
