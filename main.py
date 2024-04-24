@@ -9,6 +9,13 @@ from LabelledData import *
 from Classify import *
 import os
 
+# Set Streamlit theme to light with red accents
+st.set_page_config(page_title="Sickle Cell Disease Classifier", page_icon=":microscope:", layout="wide", initial_sidebar_state="expanded")
+
+# Define colors
+background_color = "#FFFFFF"  # White background
+text_color = "#000000"  # Black text color
+accent_color = "#FF0000"  # Red accent color
 
 def main():
     st.title("Sickle Cell Disease Classifier")
@@ -23,13 +30,9 @@ def main():
 
         # Read the uploaded image
         uploaded_image = plt.imread("temp_image.jpg")
-        st.image(uploaded_image, caption="Uploaded Image", use_column_width=True)
 
         # Prepare the image for analysis
         result, num_features = image_prep("temp_image.jpg")
-
-        # Display the prepped image
-        st.image(result, caption="Prepped Image", use_column_width=True)
 
         # Extract the area and perimeter for each cell
         areaArray, perimArray = extract_area_perim(result, num_features)
@@ -74,19 +77,47 @@ def main():
         numSickleCells = np.sum(classified)
         for i in range(len(classified)):
             if classified[i] == 1:
-                ax.scatter(relativeAreaArray[i], relativePerimArray[i], circularityArray[i], c="red")
+                ax.scatter(relativeAreaArray[i], relativePerimArray[i], circularityArray[i], c=accent_color)
 
         # Display sickle cell image
         sickle_image = displaySickleImage(result, classified)
-        st.image(sickle_image, caption="Sickle Cells Image", use_column_width=True)
 
-        # Display the classified cells image
-        st.pyplot(fig)
-        st.caption("Feature visualization of Sickle Cells")
+        # Create two columns for image display
+        col1, col2, col3 = st.columns([1, 0.5, 1])
+
+        # Display uploaded image
+        with col1:
+            st.image(uploaded_image, caption="Uploaded Image", use_column_width=True)
+
+        # Display arrow pointing towards prepped image
+        with col2:
+            st.markdown('<p style="text-align: center; font-size: 24px; margin-top: 50%;">&#8594;</p>', unsafe_allow_html=True)
+
+        # Display prepped image
+        with col3:
+            st.image(result, caption="Prepped Image", use_column_width=True)
+
+        # Add padding between rows
+        st.write("")  # Empty space
+        st.write("---")  # Divider
 
         # Display classification results
         st.subheader("Classification Results:")
-        st.write("Sickle Cells:", np.sum(classified))
+        st.write("Sickle Cells:", numSickleCells)
+
+        # Display feature visualization plot and sickle image in the same row
+        col4, col5 = st.columns([1, 1])
+
+        # Display feature visualization plot
+        with col4:
+            st.subheader("Feature Visualization")
+            st.pyplot(fig)
+            st.caption("Feature visualization of Sickle Cells")
+
+        # Display sickle cell image
+        with col5:
+            st.subheader("Sickle Cells Image")
+            st.image(sickle_image, caption="Sickle Cells Image", use_column_width=True)
 
         # Remove the temporary file
         os.remove("temp_image.jpg")
@@ -94,5 +125,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
