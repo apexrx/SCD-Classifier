@@ -1,31 +1,42 @@
-from sklearn.ensemble import RandomForestClassifier as RFClassifier
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 import numpy as np
-import math
+import tensorflow as tf
+import pandas as pd
+from imblearn.over_sampling import RandomOverSampler
 
-def findShortestDistance(array, outputSize):
-    result = [0] * outputSize
-    for i in range(len(array)):
-        curr = array[i]
-        inserted = False
-        j = 0
-        while(j < len(result) and not inserted):
-            if(curr < array[result[j]]):
-                result.insert(j,i)
-                if len(result) >= outputSize:
-                    result.pop(outputSize)
-                inserted = True
-            j+=1
-    return result
+# Data Scaling and Oversampling
+def scale_dataset(dataframe, oversample=False):
+    X = dataframe[dataframe.columns[:-1]].values
+    y = dataframe[dataframe.columns[-1]].values
 
-def RandomForestClassifier(features, labels, predictionSet, n_estimators=100):
-    # Initialize the Random Forest Classifier
-    rf_classifier = RFClassifier(n_estimators=n_estimators)
+    scaler = StandardScaler()
+    X = scaler.fit_transform(X)
 
-    # Train the Random Forest model
-    rf_classifier.fit(features, labels)
+    if oversample:
+        ros = RandomOverSampler()
+        X, y = ros.fit_resample(X, y)
 
-    # Predict the classes for the prediction set
-    predictions = rf_classifier.predict(predictionSet)
+    data = np.hstack((X, np.reshape(y, (-1, 1))))
+
+    return data, X, y
+
+# Neural Network Model
+def NeuralNetworkClassifier(features, labels, prediction_set, epochs=10, batch_size=32):
+    # Define the Neural Network
+    nn_model = tf.keras.Sequential([
+        tf.keras.layers.Dense(32, activation='relu', input_shape=(features.shape[1],)),
+        tf.keras.layers.Dense(32, activation='relu'),
+        tf.keras.layers.Dense(1, activation='sigmoid')
+    ])
+
+    # Compile the Model
+    nn_model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+
+    # Train the Model
+    nn_model.fit(features, labels, epochs=epochs, batch_size=batch_size, validation_split=0.2, verbose=1)
+
+    # Predict the Classes for the Prediction Set
+    predictions = (nn_model.predict(prediction_set) > 0.5).astype(int)
 
     return predictions
