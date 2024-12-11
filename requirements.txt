@@ -1,7 +1,8 @@
 numpy
-opencv-python-headless
+pandas
 matplotlib
-scikit_image
-scikit_learn
-scip
+opencv-python-headless
+scikit-learn
+imblearn
 streamlit
+tensorflow
