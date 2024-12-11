@@ -1,8 +1,9 @@
+import numpy as np
+import pandas as pd
+import tensorflow as tf
+from tensorflow import keras
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-import numpy as np
-import tensorflow as tf
-import pandas as pd
 from imblearn.over_sampling import RandomOverSampler
 
 # Data Scaling and Oversampling
@@ -23,20 +24,40 @@ def scale_dataset(dataframe, oversample=False):
 
 # Neural Network Model
 def NeuralNetworkClassifier(features, labels, prediction_set, epochs=10, batch_size=32):
-    # Define the Neural Network
-    nn_model = tf.keras.Sequential([
-        tf.keras.layers.Dense(32, activation='relu', input_shape=(features.shape[1],)),
-        tf.keras.layers.Dense(32, activation='relu'),
-        tf.keras.layers.Dense(1, activation='sigmoid')
-    ])
-
-    # Compile the Model
-    nn_model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-
-    # Train the Model
-    nn_model.fit(features, labels, epochs=epochs, batch_size=batch_size, validation_split=0.2, verbose=1)
-
-    # Predict the Classes for the Prediction Set
-    predictions = (nn_model.predict(prediction_set) > 0.5).astype(int)
-
-    return predictions
+    try:
+        # Clear any existing TensorFlow sessions
+        tf.keras.backend.clear_session()
+        
+        # Define the Neural Network
+        nn_model = keras.Sequential([
+            keras.layers.Dense(32, activation='relu', input_shape=(features.shape[1],)),
+            keras.layers.Dense(32, activation='relu'),
+            keras.layers.Dense(1, activation='sigmoid')
+        ])
+        
+        # Compile the Model
+        nn_model.compile(
+            optimizer='adam', 
+            loss='binary_crossentropy', 
+            metrics=['accuracy']
+        )
+        
+        # Train the Model
+        nn_model.fit(
+            features, 
+            labels, 
+            epochs=epochs, 
+            batch_size=batch_size, 
+            validation_split=0.2, 
+            verbose=1
+        )
+        
+        # Predict the Classes for the Prediction Set
+        predictions = nn_model.predict(prediction_set)
+        return (predictions > 0.5).astype(int)
+    
+    except Exception as e:
+        print(f"Error in NeuralNetworkClassifier: {e}")
+        import traceback
+        traceback.print_exc()
+        return None
