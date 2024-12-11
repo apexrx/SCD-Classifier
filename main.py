@@ -6,7 +6,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from FeatureExtraction import *
 from Tools import *
 from LabelledData import *
-from Classify import *
+from Classify import NeuralNetworkClassifier, scale_dataset
 import os
 
 # Set Streamlit theme to light with red accents
@@ -56,15 +56,20 @@ def main():
 
         labels = [1] * len(sickleData) + [0] * len(healthyData)
 
-        # Convert training data to numpy arrays
-        features_array = np.array(combinedHealthySickle)
-        labels_array = np.array(labels)
+        # Convert training data to a pandas DataFrame for scaling
+        cols = ["area", "perimeter", "circularity", "class"]
+        data = [list(data) + [label] for data, label in zip(combinedHealthySickle, labels)]
+        df = pd.DataFrame(data, columns=cols)
+
+        # Scale and preprocess training data
+        _, X_train, y_train = scale_dataset(df, oversample=True)
 
         # Extract features from the image
         features = convertTo3D(relativeAreaArray, relativePerimArray, circularityArray)
+        features = np.array(features)  # Ensure features are numpy arrays
 
-        # Classify each cell using Random Forest
-        classified = RandomForestClassifier(features_array, labels_array, features, n_estimators=100)
+        # Classify each cell using Neural Network
+        classified = NeuralNetworkClassifier(X_train, y_train, features, epochs=10, batch_size=32)
 
         # Plot the classified cells
         fig = plt.figure("Classified Graph")
@@ -121,7 +126,6 @@ def main():
 
         # Remove the temporary file
         os.remove("temp_image.jpg")
-
 
 if __name__ == "__main__":
     main()
