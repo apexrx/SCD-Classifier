@@ -1,6 +1,6 @@
 import streamlit as st
+import pandas as pd
 import numpy as np
-import cv2
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from FeatureExtraction import *
@@ -19,6 +19,23 @@ accent_color = "#FF0000"  # Red accent color
 
 def main():
     st.title("Sickle Cell Disease Classifier")
+
+    # Load and preprocess dataset from total.csv
+    st.sidebar.subheader("Dataset Configuration")
+    dataset_path = st.sidebar.text_input("Enter the path to the dataset (total.csv):", "total.csv")
+
+    try:
+        # Load the dataset
+        cols = ["area", "perimeter", "circularity", "class"]
+        df = pd.read_csv(dataset_path, names=cols, skiprows=1)
+        df["class"] = (df["class"] == "1").astype(int)
+
+        # Split and scale the dataset
+        train, valid, test = np.split(df.sample(frac=1), [int(0.6 * len(df)), int(0.8 * len(df))])
+        _, X_train, y_train = scale_dataset(train, oversample=True)
+    except Exception as e:
+        st.sidebar.error(f"Error loading dataset: {e}")
+        return
 
     # File uploader for image
     uploaded_file = st.file_uploader("Upload RBC Sample Image", type=["jpg", "png"])
@@ -46,23 +63,6 @@ def main():
 
         # Get the relative area and perimeter of each cell
         relativeAreaArray, relativePerimArray = convert_to_relative(areaArray, perimArray)
-
-        # Get preloaded data
-        sickleData = getSickleData()
-        healthyData = getHealthyData()
-
-        # Combine the two training data arrays into one array
-        combinedHealthySickle = sickleData + healthyData
-
-        labels = [1] * len(sickleData) + [0] * len(healthyData)
-
-        # Convert training data to a pandas DataFrame for scaling
-        cols = ["area", "perimeter", "circularity", "class"]
-        data = [list(data) + [label] for data, label in zip(combinedHealthySickle, labels)]
-        df = pd.DataFrame(data, columns=cols)
-
-        # Scale and preprocess training data
-        _, X_train, y_train = scale_dataset(df, oversample=True)
 
         # Extract features from the image
         features = convertTo3D(relativeAreaArray, relativePerimArray, circularityArray)
